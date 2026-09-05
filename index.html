@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Irene Vinuesa — Finance · Markets · Code · Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F1E6;
+    --bg-soft: #ECE5D3;
+    --ink: #211D17;
+    --ink-soft: #4E483D;
+    --muted: #8C8471;
+    --rule: #DBD2BC;
+    --gold: #A38F5C;
+    --gold-soft: #C6B283;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15130F;
+      --bg-soft: #1D1A15;
+      --ink: #ECE6D8;
+      --ink-soft: #C7C0AE;
+      --muted: #948C77;
+      --rule: #322C22;
+      --gold: #C9AF77;
+      --gold-soft: #E1CC93;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15130F;
+    --bg-soft: #1D1A15;
+    --ink: #ECE6D8;
+    --ink-soft: #C7C0AE;
+    --muted: #948C77;
+    --rule: #322C22;
+    --gold: #C9AF77;
+    --gold-soft: #E1CC93;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  .serif { font-family: "Playfair Display", Georgia, serif; }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  a { color: inherit; }
+
+  .label {
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0;
+  }
+
+  /* ---------- NAV ---------- */
+  nav.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .nav-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-family: "Playfair Display", serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .navlinks {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+
+  .navlinks a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    border-bottom: 1px solid transparent;
+    padding-bottom: 3px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .navlinks a:hover { color: var(--gold); border-color: var(--gold); }
+
+  .navlinks .idx {
+    color: var(--gold);
+    margin-right: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .ring-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ring-dot::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    padding: 88px 0 96px;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 64px;
+    align-items: center;
+  }
+
+  .kicker {
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 26px;
+  }
+
+  h1.name {
+    font-size: clamp(2.6rem, 5.4vw, 3.6rem);
+    font-weight: 500;
+    line-height: 1.06;
+    letter-spacing: -0.01em;
+    margin: 0 0 26px;
+  }
+
+  .lede {
+    max-width: 48ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    margin: 0 0 14px;
+  }
+
+  .lede.cities {
+    color: var(--muted);
+    font-size: 0.96rem;
+    margin: 0 0 42px;
+  }
+
+  .cta-row {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: 44px;
+  }
+
+  .circle-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+  }
+
+  .circle-btn:hover {
+    background: var(--ink);
+    color: var(--bg);
+    transform: translateX(2px);
+  }
+
+  .cta-link {
+    text-decoration: none;
+    font-size: 0.98rem;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cta-link .sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .cta-secondary {
+    text-decoration: none;
+    font-size: 0.95rem;
+    color: var(--muted);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 2px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cta-secondary:hover { color: var(--gold); border-color: var(--gold); }
+
+  .stats-row {
+    display: flex;
+    gap: 56px;
+    padding-top: 30px;
+    border-top: 1px solid var(--rule);
+    flex-wrap: wrap;
+  }
+
+  .stat .num {
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .stat .cap {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ---------- HERO EMBLEM ---------- */
+  .emblem-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 420px;
+  }
+
+  .emblem-caption {
+    position: absolute;
+    top: 0;
+    right: 0;
+    max-width: 130px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: right;
+  }
+
+  .emblem-quote {
+    position: absolute;
+    bottom: 6px;
+    left: 0;
+    max-width: 220px;
+  }
+
+  .emblem-quote p {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+    line-height: 1.5;
+  }
+
+  .emblem-quote .qline {
+    width: 34px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  .emblem-svg circle.dashed {
+    stroke: var(--gold-soft);
+  }
+
+  .emblem-svg .tick {
+    stroke: var(--rule);
+  }
+
+  .emblem-svg .star {
+    stroke: var(--gold);
+  }
+
+  .emblem-svg text {
+    fill: var(--gold);
+    font-family: "Inter", sans-serif;
+  }
+
+  .emblem-svg .iv {
+    fill: var(--ink);
+    font-family: "Playfair Display", serif;
+  }
+
+  .spin-slow {
+    animation: spin 90s linear infinite;
+    transform-origin: 200px 200px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spin-slow { animation: none; }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ---------- NUMBERED SECTIONS ---------- */
+  .num-section {
+    padding: 80px 0 56px;
+    position: relative;
+  }
+
+  .num-grid {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 8px 32px;
+  }
+
+  .num-mark {
+    font-family: "Playfair Display", serif;
+    font-size: 6.5rem;
+    line-height: 1;
+    font-weight: 500;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--gold-soft);
+    align-self: start;
+  }
+
+  .num-content {
+    max-width: 640px;
+    position: relative;
+  }
+
+  .num-caption {
+    position: absolute;
+    top: 6px;
+    right: 0;
+    max-width: 150px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: right;
+  }
+
+  h2.headline {
+    font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+    font-weight: 500;
+    line-height: 1.14;
+    margin: 10px 0 18px;
+  }
+
+  .num-content p.body {
+    color: var(--ink-soft);
+    max-width: 52ch;
+    margin: 0 0 30px;
+  }
+
+  /* ---------- ROW LISTS ---------- */
+  .row-list {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--rule);
+  }
+
+  .row-item {
+    padding: 26px 28px 0;
+    border-left: 1px solid var(--rule);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .row-item:first-child { border-left: none; padding-left: 0; }
+
+  .row-year {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 14px;
+  }
+
+  .row-title-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .row-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+  }
+
+  .row-arrow {
+    color: var(--muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .row-item:hover .row-arrow {
+    transform: translateX(3px);
+    color: var(--gold);
+  }
+
+  .row-sub {
+    margin-top: 6px;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  /* ---------- ABOUT ---------- */
+  .interest-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 10px;
+    margin: 0 0 44px;
+    padding: 0;
+  }
+
+  .interest-list li {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 8px 14px;
+  }
+
+  .reading-list {
+    max-width: 480px;
+  }
+
+  .reading-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .reading-item:last-child { border-bottom: 1px solid var(--rule); }
+
+  .reading-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.02rem;
+  }
+
+  .reading-author {
+    color: var(--muted);
+    font-size: 0.88rem;
+    white-space: nowrap;
+  }
+
+  /* ---------- CONTACT / FOOTER ---------- */
+  footer.contact {
+    padding: 72px 0 60px;
+  }
+
+  .contact-links {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin: 34px 0 60px;
+  }
+
+  .contact-links a {
+    text-decoration: none;
+    font-size: 1rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 3px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .contact-links a:hover { color: var(--gold); border-color: var(--gold); }
+
+  .foot-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 26px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .emblem-wrap { order: -1; min-height: 300px; }
+    .emblem-caption, .emblem-quote { display: none; }
+    .num-grid { grid-template-columns: 1fr; }
+    .num-mark { font-size: 4rem; }
+    .num-caption { position: static; text-align: left; max-width: none; margin-bottom: 14px; }
+    .row-list { grid-template-columns: 1fr; }
+    .row-item { border-left: none !important; border-top: 1px solid var(--rule); padding: 22px 0 0 !important; }
+    .row-item:first-child { border-top: none; }
+  }
+
+  @media (max-width: 560px) {
+    .container, .nav-inner { padding-left: 22px; padding-right: 22px; }
+    .stats-row { gap: 32px; }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-inner">
+    <div class="logo">IV</div>
+    <div class="navlinks">
+      <a href="#home"><span class="idx">01</span>Home</a>
+      <a href="#experience"><span class="idx">02</span>Experience</a>
+      <a href="#projects"><span class="idx">03</span>Projects</a>
+      <a href="#about"><span class="idx">04</span>About</a>
+      <a href="#contact"><span class="idx">05</span>Contact</a>
+    </div>
+    <div class="nav-right">
+      <span>Madrid, Spain</span>
+      <span class="ring-dot"></span>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <header class="hero" id="home">
+    <div class="hero-grid">
+      <div>
+        <p class="kicker">Finance · Markets · Code · Data</p>
+        <h1 class="name serif">Irene Vinuesa</h1>
+        <p class="lede">I'm a final-year dual-degree student — BSc in Business Analytics and BBA, with exchanges at Wharton and SMU — interested in the intersection of investing, markets and technology.</p>
+        <p class="lede cities">I've lived in London, New York, Singapore, Madrid and Philadelphia.</p>
+
+        <div class="cta-row">
+          <a class="circle-btn" href="#experience" aria-label="Explore my work">→</a>
+          <a class="cta-link" href="#experience">Explore my work</a>
+          <a class="cta-secondary" href="https://www.linkedin.com/in/irene-vinuesa-balmaseda/" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat">
+            <div class="num serif">05</div>
+            <div class="cap">Cities<br>lived in</div>
+          </div>
+          <div class="stat">
+            <div class="num serif">04</div>
+            <div class="cap">Main<br>interests</div>
+          </div>
+          <div class="stat">
+            <div class="num serif">∞</div>
+            <div class="cap">Ideas<br>to explore</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="emblem-wrap">
+        <p class="emblem-caption">Classical rigor,<br>modern markets</p>
+
+        <svg class="emblem-svg" width="360" height="360" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g class="spin-slow">
+            <circle class="dashed" cx="200" cy="200" r="160" fill="none" stroke-width="1" stroke-dasharray="2 6"/>
+            <path id="motto-circle" d="M200,60 A140,140 0 1,1 199.9,60" fill="none"/>
+            <text font-size="11" letter-spacing="3">
+              <textPath href="#motto-circle" startOffset="2%">VIA · CURIOSITAS · PROGRESSUS · VIA · CURIOSITAS · PROGRESSUS ·</textPath>
+            </text>
+          </g>
+          <g class="tick" stroke-width="1">
+            <line x1="200" y1="18" x2="200" y2="34"/>
+            <line x1="200" y1="366" x2="200" y2="382"/>
+            <line x1="18" y1="200" x2="34" y2="200"/>
+            <line x1="366" y1="200" x2="382" y2="200"/>
+          </g>
+          <g class="star" fill="none" stroke-width="1">
+            <path d="M200,140 L208,192 L260,200 L208,208 L200,260 L192,208 L140,200 L192,192 Z"/>
+            <circle cx="200" cy="200" r="6" fill="var(--gold)" stroke="none"/>
+          </g>
+          <text class="iv" x="200" y="325" font-size="15" text-anchor="middle" letter-spacing="2">EST. FINAL YEAR</text>
+        </svg>
+
+        <div class="emblem-quote">
+          <p class="serif">"I'd rather understand the world than try to predict it."</p>
+          <div class="qline"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <hr class="rule">
+
+  <!-- EXPERIENCE -->
+  <section class="num-section" id="experience">
+    <div class="num-grid">
+      <div class="num-mark">01</div>
+      <div class="num-content">
+        <p class="num-caption">Different desks.<br>One curiosity.</p>
+        <p class="label">Experience</p>
+        <h2 class="headline serif">Learning from the best.</h2>
+        <p class="body">Exposure to different markets, banks and teams has shaped how I think about finance, risk and decision-making.</p>
+        <div class="cta-row" style="margin-bottom:0;">
+          <a class="circle-btn" href="https://www.linkedin.com/in/irene-vinuesa-balmaseda/" target="_blank" rel="noopener" aria-label="View full experience">→</a>
+          <a class="cta-link" href="https://www.linkedin.com/in/irene-vinuesa-balmaseda/" target="_blank" rel="noopener">View full experience</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-list">
+      <a class="row-item" href="https://www.linkedin.com/in/irene-vinuesa-balmaseda/" target="_blank" rel="noopener">
+        <div class="row-year">2026</div>
+        <div class="row-title-line">
+          <span class="row-title">Goldman Sachs, London</span>
+          <span class="row-arrow">→</span>
+        </div>
+        <div class="row-sub">TMT Investment Banking</div>
+      </a>
+      <a class="row-item" href="https://www.linkedin.com/in/irene-vinuesa-balmaseda/" target="_blank" rel="noopener">
+        <div class="row-year">2025</div>
+        <div class="row-title-line">
+          <span class="row-title">Management Solutions, NYC</span>
+          <span class="row-arrow">→</span>
+        </div>
+        <div class="row-sub">Financial &amp; Data Summer Analyst</div>
+      </a>
+      <a class="row-item" href="https://www.linkedin.com/in/irene-vinuesa-balmaseda/" target="_blank" rel="noopener">
+        <div class="row-year">2024</div>
+        <div class="row-title-line">
+          <span class="row-title">Evercore</span>
+          <span class="row-arrow">→</span>
+        </div>
+        <div class="row-sub">Investment Banking Generalist</div>
+      </a>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- PROJECTS -->
+  <section class="num-section" id="projects">
+    <div class="num-grid">
+      <div class="num-mark">02</div>
+      <div class="num-content">
+        <p class="num-caption">One curiosity.<br>Many tools.</p>
+        <p class="label">Projects</p>
+        <h2 class="headline serif">Turning ideas into evidence.</h2>
+        <p class="body">Independent research and models exploring how markets price risk, growth and uncertainty.</p>
+        <div class="cta-row" style="margin-bottom:0;">
+          <a class="circle-btn" href="#projects-list" aria-label="View all projects">→</a>
+          <a class="cta-link" href="#projects-list">View all projects</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-list" id="projects-list">
+      <a class="row-item" href="#">
+        <div class="row-year">01</div>
+        <div class="row-title-line">
+          <span class="row-title">Dutch Bros</span>
+          <span class="row-arrow">→</span>
+        </div>
+        <div class="row-sub">Fundamental Equity Research</div>
+      </a>
+      <a class="row-item" href="#">
+        <div class="row-year">02</div>
+        <div class="row-title-line">
+          <span class="row-title">Quant Portfolio Lab</span>
+          <span class="row-arrow">→</span>
+        </div>
+        <div class="row-sub">Python · Portfolio Construction</div>
+      </a>
+      <a class="row-item" href="#">
+        <div class="row-year">03</div>
+        <div class="row-title-line">
+          <span class="row-title">Volatility Surface</span>
+          <span class="row-arrow">→</span>
+        </div>
+        <div class="row-sub">Options · Python</div>
+      </a>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ABOUT -->
+  <section class="num-section" id="about">
+    <div class="num-grid">
+      <div class="num-mark">03</div>
+      <div class="num-content" style="max-width:720px;">
+        <p class="label">About</p>
+        <h2 class="headline serif">Curious by design.</h2>
+        <p class="body">A dual degree, three exchange semesters and five cities have all pointed the same direction: understanding how capital, data and people move together.</p>
+
+        <ul class="interest-list">
+          <li>Equity Research</li>
+          <li>Quantitative Finance</li>
+          <li>Venture Capital</li>
+          <li>Emerging Markets</li>
+        </ul>
+
+        <p class="label" style="margin-bottom:16px;">Recommended readings</p>
+        <div class="reading-list">
+          <div class="reading-item">
+            <span class="reading-title serif">The Intelligent Investor</span>
+            <span class="reading-author">Benjamin Graham</span>
+          </div>
+          <div class="reading-item">
+            <span class="reading-title serif">Poor Charlie's Almanack</span>
+            <span class="reading-author">Charles T. Munger</span>
+          </div>
+          <div class="reading-item">
+            <span class="reading-title serif">Fooled by Randomness</span>
+            <span class="reading-author">Nassim N. Taleb</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- CONTACT -->
+  <footer class="contact" id="contact">
+    <div class="num-grid">
+      <div class="num-mark">04</div>
+      <div class="num-content">
+        <p class="label">Contact</p>
+        <h2 class="headline serif">Let's talk markets.</h2>
+        <p class="body">Always happy to talk investing, data or the next idea — reach out on LinkedIn or by email.</p>
+
+        <div class="contact-links">
+          <a href="https://www.linkedin.com/in/irene-vinuesa-balmaseda/" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="mailto:irene7vb@gmail.com">irene7vb@gmail.com</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <span>© 2026 Irene Vinuesa</span>
+      <span>Madrid, Spain</span>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
