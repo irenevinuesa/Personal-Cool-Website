@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Irene Vinuesa — Finance · Markets · Code · Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F1E6;
+    --bg-soft: #ECE5D3;
+    --ink: #211D17;
+    --ink-soft: #4E483D;
+    --muted: #8C8471;
+    --rule: #DBD2BC;
+    --gold: #A38F5C;
+    --gold-soft: #C6B283;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15130F;
+      --bg-soft: #1D1A15;
+      --ink: #ECE6D8;
+      --ink-soft: #C7C0AE;
+      --muted: #948C77;
+      --rule: #322C22;
+      --gold: #C9AF77;
+      --gold-soft: #E1CC93;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15130F;
+    --bg-soft: #1D1A15;
+    --ink: #ECE6D8;
+    --ink-soft: #C7C0AE;
+    --muted: #948C77;
+    --rule: #322C22;
+    --gold: #C9AF77;
+    --gold-soft: #E1CC93;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  .serif { font-family: "Playfair Display", Georgia, serif; }
+
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  a { color: inherit; }
+
+  .label {
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 0;
+  }
+
+  /* ---------- NAV ---------- */
+  nav.topnav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .nav-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-family: "Playfair Display", serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .navlinks {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+
+  .navlinks a {
+    text-decoration: none;
+    color: var(--ink-soft);
+    border-bottom: 1px solid transparent;
+    padding-bottom: 3px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .navlinks a:hover { color: var(--gold); border-color: var(--gold); }
+
+  .navlinks .idx {
+    color: var(--gold);
+    margin-right: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .ring-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ring-dot::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .hero-inner {
+    padding: 88px 0 140px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .kicker {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    margin: 0 0 30px;
+  }
+
+  h1.name {
+    font-size: clamp(2.6rem, 5.4vw, 3.6rem);
+    font-weight: 500;
+    line-height: 1.06;
+    letter-spacing: -0.01em;
+    margin: 0 0 30px;
+  }
+
+  .lede {
+    max-width: 46ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+    margin: 0 0 16px;
+  }
+
+  .lede.cities {
+    color: var(--muted);
+    font-size: 0.96rem;
+    margin: 0;
+  }
+
+  /* Reveal-on-load, hero text only */
+  .reveal {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .r1 { animation-delay: 0.05s; }
+  .r2 { animation-delay: 0.18s; }
+  .r3 { animation-delay: 0.36s; }
+  .r4 { animation-delay: 0.5s; }
+
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; animation: none; }
+  }
+
+  /* ---------- HERO VISUAL: bust + geometry ---------- */
+  .hero-visual {
+    position: relative;
+    min-height: 560px;
+    will-change: transform;
+  }
+
+  .geo-layer {
+    position: absolute;
+    inset: -6% -8%;
+    z-index: 1;
+    pointer-events: none;
+    transition: transform 0.15s ease-out;
+  }
+
+  .geo-svg { width: 100%; height: 100%; overflow: visible; }
+
+  .geo-svg .orbit,
+  .geo-svg .construct,
+  .geo-svg .diagonal,
+  .geo-svg .nav-star {
+    fill: none;
+    stroke: var(--gold-soft);
+    stroke-width: 1;
+  }
+
+  .geo-svg .dotted-arc {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1;
+    stroke-dasharray: 1.5 5;
+  }
+
+  .geo-svg .node {
+    fill: var(--gold);
+  }
+
+  .geo-svg .tick {
+    stroke: var(--rule);
+    stroke-width: 1;
+  }
+
+  .geo-svg .planet {
+    opacity: 0.9;
+  }
+
+  .geo-svg .draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .geo-svg .draw { stroke-dashoffset: 0; animation: none; }
+  }
+
+  .bust-wrap {
+    position: relative;
+    z-index: 2;
+    width: min(88%, 460px);
+    margin: 0 0 0 auto;
+    opacity: 0;
+    animation: emerge 1.4s ease-out 0.3s forwards;
+    transition: transform 0.15s ease-out;
+  }
+
+  @keyframes emerge { to { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bust-wrap { opacity: 1; animation: none; }
+  }
+
+  .bust-img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .bust-wrap.no-image .bust-img { display: none; }
+
+  .bust-wrap::after {
+    content: "";
+    position: absolute;
+    inset: -12%;
+    background: radial-gradient(ellipse 68% 74% at 50% 38%, transparent 52%, var(--bg) 94%);
+    pointer-events: none;
+  }
+
+  .latin-annot {
+    position: absolute;
+    z-index: 3;
+    font-family: "Playfair Display", serif;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.7;
+    pointer-events: none;
+  }
+
+  .latin-annot .annot-line {
+    display: block;
+    width: 22px;
+    height: 1px;
+    background: var(--rule);
+    margin-top: 9px;
+  }
+
+  .annot-tl { top: 3%; left: 1%; text-align: left; }
+  .annot-r  { top: 46%; right: -3%; text-align: left; max-width: 96px; }
+  .annot-br { bottom: 24%; right: 0%; text-align: left; max-width: 118px; }
+
+  .corner-fragment {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    transition: transform 0.15s ease-out;
+  }
+
+  .corner-column {
+    left: -18px;
+    bottom: -30px;
+    width: 200px;
+    height: auto;
+    opacity: 0.95;
+  }
+
+  .corner-globe {
+    right: -70px;
+    bottom: -90px;
+    width: 400px;
+    height: auto;
+    opacity: 0.5;
+  }
+
+  .annot-side {
+    position: absolute;
+    z-index: 2;
+    left: 190px;
+    bottom: 90px;
+    font-family: "Playfair Display", serif;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .annot-side .annot-line {
+    display: block;
+    width: 22px;
+    height: 1px;
+    background: var(--rule);
+    margin: 9px 0 15px;
+  }
+
+  @media (max-width: 880px) {
+    .corner-globe { display: none; }
+    .annot-side { display: none; }
+    .annot-r, .annot-br { display: none; }
+    .corner-column { width: 130px; left: -14px; bottom: -16px; opacity: 0.7; }
+  }
+
+
+
+  /* ---------- NUMBERED SECTIONS ---------- */
+  .num-section {
+    padding: 80px 0 56px;
+    position: relative;
+  }
+
+  .num-grid {
+    display: block;
+  }
+
+  .num-content {
+    max-width: 640px;
+    position: relative;
+  }
+
+  .num-heading-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .num-caption {
+    max-width: 200px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: right;
+  }
+
+  h2.headline {
+    font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+    font-weight: 500;
+    line-height: 1.14;
+    margin: 10px 0 18px;
+  }
+
+  .num-content p.body {
+    color: var(--ink-soft);
+    max-width: 52ch;
+    margin: 0 0 30px;
+  }
+
+  /* ---------- ROW LISTS ---------- */
+  .row-list {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--rule);
+  }
+
+  .row-item {
+    padding: 26px 28px 0;
+    border-left: 1px solid var(--rule);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .row-item:first-child { border-left: none; padding-left: 0; }
+
+  .row-year {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 14px;
+  }
+
+  .row-title-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .row-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+  }
+
+  .row-arrow {
+    color: var(--muted);
+    transition: transform 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .row-item:hover .row-arrow {
+    transform: translateX(3px);
+    color: var(--gold);
+  }
+
+  .row-sub {
+    margin-top: 6px;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  /* ---------- ABOUT ---------- */
+  .interest-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 10px;
+    margin: 0 0 44px;
+    padding: 0;
+  }
+
+  .interest-list li {
+    font-size: 0.82rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 8px 14px;
+  }
+
+  .reading-list {
+    max-width: 480px;
+  }
+
+  .reading-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .reading-item:last-child { border-bottom: 1px solid var(--rule); }
+
+  .reading-title {
+    font-family: "Playfair Display", serif;
+    font-size: 1.02rem;
+  }
+
+  .reading-author {
+    color: var(--muted);
+    font-size: 0.88rem;
+    white-space: nowrap;
+  }
+
+  /* ---------- CONTACT / FOOTER ---------- */
+  footer.contact {
+    padding: 72px 0 60px;
+  }
+
+  .contact-links {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin: 34px 0 60px;
+  }
+
+  .contact-links a {
+    text-decoration: none;
+    font-size: 1rem;
+    color: var(--ink);
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 3px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .contact-links a:hover { color: var(--gold); border-color: var(--gold); }
+
+  .foot-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 26px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 880px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-visual { order: -1; min-height: 340px; }
+    .num-grid { grid-template-columns: 1fr; }
+    .num-heading-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .num-caption { text-align: left; max-width: none; }
+    .row-list { grid-template-columns: 1fr; }
+    .row-item { border-left: none !important; border-top: 1px solid var(--rule); padding: 22px 0 0 !important; }
+    .row-item:first-child { border-top: none; }
+  }
+
+  @media (max-width: 560px) {
+    .container, .nav-inner { padding-left: 22px; padding-right: 22px; }
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-inner">
+    <div class="logo">IV</div>
+    <div class="navlinks">
+      <a href="#about"><span class="idx">01</span>About me</a>
+      <a href="#experience"><span class="idx">02</span>My experience</a>
+      <a href="#projects"><span class="idx">03</span>My projects</a>
+      <a href="#recommendations"><span class="idx">04</span>My recommendations</a>
+      <a href="#contact"><span class="idx">05</span>Contact</a>
+    </div>
+    <div class="nav-right">
+      <span>Madrid, Spain</span>
+      <span class="ring-dot"></span>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="home">
+  <div class="container hero-inner">
+    <div class="hero-grid">
+      <div>
+        <p class="kicker reveal r1">finance · markets · math · code · data</p>
+        <h1 class="name serif reveal r2">Irene Vinuesa</h1>
+        <p class="lede reveal r3">I'm a final-year dual-degree student — BSc in Business Analytics and BBA, with exchanges at Wharton and SMU — interested in the intersection of investing, markets and technology.</p>
+        <p class="lede cities reveal r4">I've lived in London, New York, Singapore, Madrid and Philadelphia.</p>
+      </div>
+
+      <div class="hero-visual" id="hero-visual">
+
+        <div class="geo-layer" id="geo-layer">
+          <svg class="geo-svg" viewBox="0 0 700 800" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+
+            <!-- large incomplete elliptical orbit around the head -->
+            <path class="orbit draw" pathLength="1" style="animation-delay:.1s"
+              d="M 460,90 A 240,300 -12 1 1 200,660" transform="rotate(-4 460 90)"/>
+
+            <!-- second, smaller elliptical orbit -->
+            <ellipse class="orbit draw" pathLength="1" style="animation-delay:.25s"
+              cx="430" cy="330" rx="235" ry="170" transform="rotate(8 430 330)"/>
+
+            <!-- one full dotted orbit -->
+            <ellipse class="dotted-arc" cx="410" cy="360" rx="290" ry="220" transform="rotate(-6 410 360)"/>
+
+            <!-- construction lines -->
+            <line class="construct draw" pathLength="1" x1="470" y1="40"  x2="470" y2="740" style="animation-delay:.35s"/>
+            <line class="construct draw" pathLength="1" x1="150" y1="330" x2="640" y2="330" style="animation-delay:.45s"/>
+            <line class="construct draw" pathLength="1" x1="150" y1="470" x2="560" y2="470" style="animation-delay:.55s"/>
+            <line class="construct draw" pathLength="1" x1="330" y1="60"  x2="330" y2="760" style="animation-delay:.65s"/>
+
+            <!-- diagonal geometric construction line -->
+            <line class="diagonal draw" pathLength="1" x1="180" y1="600" x2="520" y2="230" style="animation-delay:.75s"/>
+
+            <!-- nodes at intersections -->
+            <circle class="node" cx="470" cy="330" r="2.4"/>
+            <circle class="node" cx="330" cy="470" r="2.4"/>
+            <circle class="node" cx="180" cy="600" r="2.4"/>
+            <circle class="node" cx="560" cy="420" r="2.4"/>
+            <circle class="node" cx="460" cy="90" r="2.4"/>
+            <circle class="node" cx="200" cy="660" r="2.4"/>
+
+            <!-- fine measurement ticks along the orbit -->
+            <g class="tick">
+              <line x1="470" y1="330" x2="481" y2="330"/>
+              <line x1="330" y1="470" x2="330" y2="481"/>
+              <line x1="150" y1="330" x2="150" y2="341"/>
+              <line x1="640" y1="330" x2="640" y2="341"/>
+              <line x1="470" y1="200" x2="480" y2="198"/>
+              <line x1="300" y1="600" x2="296" y2="610"/>
+              <line x1="560" y1="500" x2="570" y2="503"/>
+            </g>
+
+            <!-- moon / planet -->
+            <circle class="planet" cx="215" cy="628" r="30" fill="url(#planetGrad)"/>
+            <circle class="node" cx="215" cy="628" r="1.6" fill="var(--bg)"/>
+
+            <!-- elegant eight-point navigation star -->
+            <g class="nav-star">
+              <path class="draw" pathLength="1" style="animation-delay:1s" d="M 592,352 L 599,394 L 641,401 L 599,408 L 592,450 L 585,408 L 543,401 L 585,394 Z"/>
+              <path class="draw" pathLength="1" style="animation-delay:1.1s; stroke-width:0.6;" d="M 592,330 L 592,472 M 521,401 L 663,401"/>
+            </g>
+
+            <defs>
+              <radialGradient id="planetGrad" cx="38%" cy="35%" r="70%">
+                <stop offset="0%" stop-color="var(--gold-soft)"/>
+                <stop offset="100%" stop-color="var(--muted)"/>
+              </radialGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <figure class="bust-wrap" id="bust-wrap">
+          <img class="bust-img" src="assets/hero-bust.png" alt="Classical marble bust, editorial hero portrait" loading="eager"
+               onerror="this.style.display='none'; this.closest('.bust-wrap').classList.add('no-image')">
+        </figure>
+
+        <p class="latin-annot annot-tl">VIA<br>CURIOSITAS</p>
+        <p class="latin-annot annot-r">AD<br>PROGRESSUM</p>
+        <p class="latin-annot annot-br" style="bottom:20%;">DISCIPLINA<br>MOVET<br>MUNDUM<span class="annot-line"></span></p>
+      </div>
+    </div>
+  </div>
+
+  <p class="annot-side">TEMPORA<br>MUTANTUR<span class="annot-line"></span>IDEAE<br>PERMANENT</p>
+
+  <img class="corner-fragment corner-column" src="assets/greek-column.png" alt="" aria-hidden="true"
+       onerror="this.style.display='none'">
+
+  <svg class="corner-fragment corner-globe" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g stroke="var(--gold-soft)" stroke-width="0.6" fill="none">
+      <circle cx="480" cy="480" r="360"/>
+      <circle cx="480" cy="480" r="360" stroke-dasharray="1.5 5"/>
+      <ellipse cx="480" cy="480" rx="360" ry="60"/>
+      <ellipse cx="480" cy="480" rx="360" ry="140"/>
+      <ellipse cx="480" cy="480" rx="360" ry="230"/>
+      <ellipse cx="480" cy="480" rx="360" ry="300"/>
+      <ellipse cx="480" cy="480" rx="70" ry="360"/>
+      <ellipse cx="480" cy="480" rx="160" ry="360"/>
+      <ellipse cx="480" cy="480" rx="260" ry="360"/>
+      <line x1="90" y1="480" x2="870" y2="480"/>
+      <line x1="480" y1="90" x2="480" y2="870"/>
+      <circle cx="480" cy="480" r="6" fill="none"/>
+    </g>
+    <g stroke="var(--rule)" stroke-width="0.5">
+      <line x1="118" y1="480" x2="118" y2="492"/>
+      <line x1="198" y1="480" x2="198" y2="492"/>
+      <line x1="278" y1="480" x2="278" y2="492"/>
+      <line x1="358" y1="480" x2="358" y2="492"/>
+    </g>
+    <g fill="var(--gold)">
+      <circle cx="330" cy="260" r="1.6"/>
+      <circle cx="230" cy="360" r="1.6"/>
+      <circle cx="380" cy="180" r="1.6"/>
+      <circle cx="150" cy="420" r="1.2"/>
+      <circle cx="270" cy="150" r="1.2"/>
+      <circle cx="420" cy="300" r="1.2"/>
+    </g>
+    <path stroke="var(--gold)" stroke-width="1" fill="none" d="M 300,238 L 302,246 L 310,248 L 302,250 L 300,258 L 298,250 L 290,248 L 298,246 Z"/>
+    <path stroke="var(--muted)" stroke-width="0.6" fill="none" d="M 340,210 L 348,206 M 344,208 L 344,220"/>
+  </svg>
+</header>
+
+<script>
+(function () {
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hero = document.getElementById('home');
+  var visual = document.getElementById('hero-visual');
+  var geo = document.getElementById('geo-layer');
+  var bust = document.getElementById('bust-wrap');
+  var column = document.querySelector('.corner-column');
+  var globe = document.querySelector('.corner-globe');
+  if (!hero || reduceMotion) return;
+
+  var mx = 0, my = 0, targetX = 0, targetY = 0;
+
+  function onMouseMove(e) {
+    var r = hero.getBoundingClientRect();
+    targetX = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    targetY = ((e.clientY - r.top) / r.height - 0.5) * 2;
+  }
+
+  function onScroll() {
+    var r = hero.getBoundingClientRect();
+    var progress = Math.min(Math.max(-r.top / (r.height || 1), 0), 1);
+    if (bust) bust.style.transform = 'translateY(' + (progress * 18) + 'px)';
+    if (geo) geo.style.transform = 'translateY(' + (progress * 34) + 'px)';
+    if (column) column.style.transform = 'translateY(' + (-progress * 14) + 'px)';
+    if (globe) globe.style.transform = 'translateY(' + (-progress * 26) + 'px)';
+  }
+
+  function raf() {
+    mx += (targetX - mx) * 0.06;
+    my += (targetY - my) * 0.06;
+    if (geo) geo.style.transform = geo.style.transform.replace(/translate3d\([^)]*\)/, '') + ' translate3d(' + (mx * 10) + 'px,' + (my * 8) + 'px,0)';
+    if (bust) bust.style.transform = bust.style.transform.replace(/translate3d\([^)]*\)/, '') + ' translate3d(' + (mx * -4) + 'px,' + (my * -3) + 'px,0)';
+    requestAnimationFrame(raf);
+  }
+
+  if (visual) visual.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  requestAnimationFrame(raf);
+})();
+</script>
+</body>
+</html>
