@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experience · Irene Vinuesa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ivory: #efe4cd;
+    --gold: #d6bf88;
+    --serif: "Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; background: #02030a; }
+  body { height: 100%; }
+  body {
+    color: var(--ivory);
+    font-family: var(--serif);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    overflow: hidden;
+  }
+  /* Dimmed, softened copy of the hub background so the placeholder feels like the same universe */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -4%;
+    z-index: -1;
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(2, 3, 10, 0.55) 0%, rgba(2, 3, 10, 0.92) 85%),
+      url("Fotos/observatory/planet-hub.png") center / cover no-repeat;
+    filter: blur(6px) brightness(0.55);
+  }
+  main { max-width: 90vw; }
+  h1 {
+    font-weight: 300;
+    font-size: clamp(1.6rem, 4.4vw, 3.6rem);
+    letter-spacing: 0.34em;
+    padding-left: 0.34em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.7);
+  }
+  .rule {
+    width: 1px;
+    height: 34px;
+    margin: 28px auto;
+    background: linear-gradient(to bottom, rgba(214, 191, 136, 0.85), rgba(214, 191, 136, 0.08));
+  }
+  p {
+    font-weight: 400;
+    font-size: clamp(0.8rem, 1.2vw, 1.05rem);
+    letter-spacing: 0.42em;
+    padding-left: 0.42em;
+    text-transform: uppercase;
+    color: rgba(226, 210, 166, 0.92);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px 46px;
+    margin-top: 56px;
+  }
+  .links a {
+    display: inline-block;
+    font-size: clamp(0.72rem, 1vw, 0.92rem);
+    letter-spacing: 0.34em;
+    padding: 0 0 6px 0.34em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(243, 233, 212, 0.9);
+    border-bottom: 1px solid transparent;
+    transition: color 0.6s ease, border-color 0.6s ease;
+  }
+  .links a:hover, .links a:focus-visible { color: #fff4d8; border-bottom-color: rgba(214, 191, 136, 0.75); outline: none; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Experience</h1>
+    <div class="rule"></div>
+    <p>Work in progress... :)</p>
+    <nav class="links">
+      <a href="observatory-test.html#universe">&larr; Back to the universe</a>
+      <a href="observatory-test.html">&larr; Back home</a>
+    </nav>
+  </main>
+</body>
+</html>

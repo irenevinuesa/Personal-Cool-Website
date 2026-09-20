@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Observatory Approach Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #f3e9d8;
+    --ink-soft: rgba(243, 233, 216, 0.78);
+    --serif: "Cormorant Garamond", "Cormorant", Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #050403; }
+  body {
+    background: #050403;
+    color: var(--ink);
+    font-family: var(--serif);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Scroll length: 6 viewport heights for the approved sequence + 6 for the galaxy-to-universe transition (+1 for the viewport itself) */
+  #scroller { height: 1300vh; }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: #050403;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+    --ax: 50%;
+    --ay: 50%;
+  }
+  body.ready #stage { opacity: 1; }
+
+  /* The camera: image plus candle glows, transformed together */
+  #cam {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+  #plate {
+    display: block;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  /* Frontal eyepiece: sits above the observatory, hidden until the crossfade */
+  #eye {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    visibility: hidden;
+    transform-origin: 0 0;
+    pointer-events: none;
+  }
+  #eyeImg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .candles { position: absolute; inset: 0; pointer-events: none; }
+
+  /* Candle glow: warm blobs attached to the image, breathing gently */
+  .candle {
+    position: absolute;
+    width: 5.5%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(255, 190, 100, 0.55) 0%,
+      rgba(255, 150, 60, 0.22) 35%,
+      rgba(255, 130, 40, 0) 70%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    animation: breathe var(--d, 4.6s) ease-in-out var(--delay, 0s) infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(0.92); }
+    45%      { opacity: 0.85; transform: translate(-50%, -50%) scale(1.06); }
+    70%      { opacity: 0.55; transform: translate(-50%, -50%) scale(0.98); }
+  }
+
+  #dust {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* Static, very subtle vignette */
+  #vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at 50% 50%,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(4, 2, 1, 0.38) 100%);
+  }
+
+  /* Progressive darkening near the end, focused on the eyepiece */
+  #darken {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(circle at var(--ax) var(--ay),
+      rgba(6, 4, 2, 0.05) 6%,
+      rgba(6, 4, 2, 0.6) 38%,
+      rgba(4, 3, 2, 0.96) 85%);
+  }
+
+  /* Soft left-side scrim so the title reads over bright marble */
+  #scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg,
+      rgba(5, 3, 2, 0.55) 0%,
+      rgba(5, 3, 2, 0.28) 32%,
+      rgba(5, 3, 2, 0) 55%);
+  }
+
+  /* Prototype text */
+  .title-block {
+    position: absolute;
+    left: clamp(24px, 7vw, 120px);
+    top: 22vh;
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+  .title-block h1 {
+    font-weight: 300;
+    font-size: clamp(2.6rem, 6.4vw, 6.4rem);
+    line-height: 1.02;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.55);
+  }
+  .rule {
+    width: 44px;
+    height: 1px;
+    margin: clamp(18px, 3vh, 30px) 0;
+    background: rgba(243, 233, 216, 0.6);
+  }
+  .disciplines {
+    font-weight: 400;
+    font-size: clamp(0.72rem, 1.05vw, 1rem);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.7);
+  }
+
+  .invite {
+    position: absolute;
+    left: 50%;
+    bottom: 6vh;
+    transform: translateX(-50%);
+    text-align: center;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    color: var(--ink);
+    font-family: var(--serif);
+    will-change: opacity, transform;
+  }
+  .invite span {
+    display: block;
+    font-size: clamp(0.72rem, 1vw, 0.95rem);
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    padding-left: 0.42em;
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.8);
+  }
+  .invite i {
+    display: block;
+    width: 1px;
+    height: 38px;
+    margin: 14px auto 0;
+    background: linear-gradient(to bottom, rgba(243, 233, 216, 0.8), rgba(243, 233, 216, 0));
+    animation: cue 2.8s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes cue {
+    0%, 100% { transform: scaleY(0.55); opacity: 0.5; }
+    50%      { transform: scaleY(1); opacity: 1; }
+  }
+  .invite:focus-visible { outline: 1px solid rgba(243, 233, 216, 0.7); outline-offset: 10px; }
+
+  /* Debug readout: press D */
+  #hud {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 10;
+    padding: 6px 10px;
+    font: 12px/1.4 ui-monospace, Menlo, monospace;
+    color: #f3e9d8;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(243, 233, 216, 0.25);
+    display: none;
+    pointer-events: none;
+    white-space: pre;
+  }
+  body.debug #hud { display: block; }
+
+  @media (max-width: 700px) {
+    .title-block { top: 16vh; }
+    .title-block h1 { letter-spacing: 0.12em; }
+    #scrim { background: linear-gradient(180deg, rgba(5,3,2,0.55) 0%, rgba(5,3,2,0.2) 45%, rgba(5,3,2,0) 70%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .candle, .invite i { animation: none; }
+    .candle { opacity: 0.6; }
+    #stage { transition: none; }
+  }
+
+  /* ================= Celestial hub (planet-hub image) ================= */
+  #hub {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    pointer-events: none;
+    --ivory: #efe4cd;
+    --gold: #d6bf88;
+  }
+  #hub.ready { pointer-events: auto; }
+  #hubStage {                                       /* labels + hit areas only, laid out over the final image position */
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+
+  /* planet-hub.png lives INSIDE the telescope: a window (mask) over the glass opening of the eyepiece image.
+     It moves and scales together with the telescope, so the universe is continuously visible. */
+  #eyeWin { position: absolute; inset: 0; }
+  .win-base { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, #0b0d1b 0%, #05060f 55%, #02030a 100%); }
+  .win-back {                                        /* only on narrow screens, where the image is letterboxed */
+    position: absolute;
+    inset: -6%;
+    width: 112%;
+    height: 112%;
+    object-fit: cover;
+    filter: blur(24px) brightness(0.5) saturate(1.1);
+    display: none;
+  }
+  #eyeWin.bars .win-back { display: block; }
+  #hubImg {
+    position: absolute;
+    display: block;
+    max-width: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  /* One destination = an invisible hit area over the planet + a live-text label beside it.
+     Both are positioned as percentages of the displayed image, so they stay aligned at any size. */
+  .dest { position: absolute; inset: 0; pointer-events: none; }
+  .hit {
+    position: absolute;
+    left: var(--cx);
+    top: var(--cy);
+    width: var(--w);
+    height: var(--h);
+    min-width: 56px;
+    min-height: 56px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    display: block;
+    text-decoration: none;
+    cursor: pointer;
+    outline: none;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hit .halo {                                      /* very subtle glow on hover / focus */
+    position: absolute;
+    inset: -12%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse closest-side, rgba(255, 222, 165, 0) 68%, rgba(255, 214, 150, 0.22) 82%, rgba(255, 200, 130, 0) 100%);
+    mix-blend-mode: screen;
+    opacity: 0;
+    transform: scale(0.97);
+    transition: opacity 0.9s ease, transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
+    pointer-events: none;
+  }
+  .hit .sel {                                       /* thin ring shown on selection */
+    position: absolute;
+    inset: -9%;
+    border-radius: 50%;
+    border: 1px solid rgba(239, 228, 205, 0.6);
+    opacity: 0;
+    transform: scale(0.96);
+    transition: opacity 0.7s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+    pointer-events: none;
+  }
+  .dest.active .halo, .hit:focus-visible .halo { opacity: 1; transform: scale(1.03); }
+  .hit:focus-visible .sel { opacity: 0.5; transform: scale(1); }
+
+  .lbl {
+    position: absolute;
+    left: var(--lx);
+    top: var(--ly);
+    transform: translateX(calc(-50% + var(--shift, 0px)));
+    white-space: nowrap;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(0.76rem, 1.1vw, 1.04rem);
+    letter-spacing: 0.34em;
+    padding-left: 0.34em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(243, 233, 212, 0.97);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 1), 0 0 20px rgba(0, 0, 0, 0.95), 0 0 34px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    cursor: pointer;
+    pointer-events: none;
+    transition: color 0.7s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  #hub.ready .lbl { pointer-events: auto; }
+  .lbl::after {
+    content: "";
+    display: block;
+    width: 0;
+    height: 1px;
+    margin: 9px auto 0;
+    background: rgba(214, 191, 136, 0.75);
+    transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .dest.active .lbl { color: #fff4d8; transform: translateX(calc(-50% + var(--shift, 0px))) scale(1.035); }
+  .dest.active .lbl::after { width: 26px; }
+  .dest[data-side="left"] .lbl { transform: translate(calc(-100% + var(--shift, 0px)), -50%); padding-left: 0; text-align: right; }
+  .dest[data-side="left"] .lbl::after { margin-left: auto; margin-right: 0.34em; }
+  .dest[data-side="left"].active .lbl { transform: translate(calc(-100% + var(--shift, 0px)), -50%) scale(1.035); transform-origin: right center; }
+
+  /* Header and footer text */
+  .hub-head, .hub-foot {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--ivory);
+    font-family: var(--serif);
+    text-transform: uppercase;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .hub-head { top: clamp(18px, 4.4vh, 46px); }
+  .hub-head .row { display: flex; align-items: center; gap: clamp(14px, 1.6vw, 24px); }
+  .head-text {
+    font-weight: 400;
+    font-size: clamp(0.82rem, 1.18vw, 1.12rem);
+    letter-spacing: 0.56em;
+    padding-left: 0.56em;
+  }
+  .hub-foot { bottom: clamp(12px, 2.4vh, 30px); color: rgba(226, 210, 166, 0.92); }
+  .hub-foot span {
+    font-weight: 400;
+    font-size: clamp(0.66rem, 0.94vw, 0.9rem);
+    letter-spacing: 0.46em;
+    padding-left: 0.46em;
+    line-height: 1.6;
+  }
+  .star { width: 10px; height: 10px; fill: var(--gold); opacity: 0.9; flex: none; }
+  .hub-foot .vrule { height: 8px; margin: 3px 0; }
+  .hub-foot { line-height: 1.45; }
+  .back-home {
+    margin-top: 12px;
+    padding: 0 0 5px 0.34em;
+    font-size: clamp(0.64rem, 0.88vw, 0.8rem);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(226, 210, 166, 0.82);
+    border-bottom: 1px solid transparent;
+    transition: color 0.6s ease, border-color 0.6s ease;
+    cursor: pointer;
+  }
+  #hub.ready .back-home { pointer-events: auto; }
+  .back-home:hover, .back-home:focus-visible { color: #fff4d8; border-bottom-color: rgba(214, 191, 136, 0.75); outline: none; }
+  .vrule {
+    display: block;
+    width: 1px;
+    height: clamp(16px, 2.6vh, 26px);
+    margin: 9px 0;
+    background: linear-gradient(to bottom, rgba(214, 191, 136, 0.85), rgba(214, 191, 136, 0.08));
+  }
+
+
+  /* Galaxy -> universe transition helpers */
+  #eyeVeil {                                          /* darkens and softens the brass around the glass */
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    --gr: 240px;
+    background: radial-gradient(circle at var(--vx, 50%) var(--vy, 50%),
+      rgba(3, 4, 10, 0) calc(var(--gr) * 0.96),
+      rgba(3, 4, 10, 0.72) calc(var(--gr) * 1.25),
+      rgba(2, 3, 8, 0.97) calc(var(--gr) * 2.1));
+  }
+
+  /* ================= Permanent navigation: HOME + hamburger ================= */
+  #topnav {
+    position: fixed;
+    top: clamp(10px, 2.4vh, 26px);
+    right: clamp(12px, 2.4vw, 38px);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: clamp(6px, 1.2vw, 18px);
+    font-family: var(--serif);
+  }
+  .nav-home {
+    padding: 14px 4px 9px calc(4px + 0.34em);
+    font-size: clamp(0.72rem, 0.92vw, 0.88rem);
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(243, 233, 212, 0.92);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.95), 0 0 22px rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid transparent;
+    transition: color 0.6s ease, border-color 0.6s ease;
+  }
+  .nav-home:hover, .nav-home:focus-visible { color: #fff4d8; border-bottom-color: rgba(214, 191, 136, 0.75); outline: none; }
+  .nav-burger {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-burger span {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 22px;
+    height: 1px;
+    margin-left: -11px;
+    background: rgba(243, 233, 212, 0.92);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.4s ease, background 0.5s ease;
+  }
+  .nav-burger span:nth-child(1) { transform: translateY(-6px); }
+  .nav-burger span:nth-child(3) { transform: translateY(6px); }
+  .nav-burger:hover span, .nav-burger:focus-visible span { background: #fff4d8; }
+  .nav-burger.open span:nth-child(1) { transform: translateY(0) rotate(45deg); }
+  .nav-burger.open span:nth-child(2) { opacity: 0; }
+  .nav-burger.open span:nth-child(3) { transform: translateY(0) rotate(-45deg); }
+  .nav-burger:focus-visible { outline: 1px solid rgba(214, 191, 136, 0.6); outline-offset: -6px; }
+
+  #menu {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 50%, rgba(8, 9, 18, 0.58) 0%, rgba(3, 4, 10, 0.84) 100%);
+    -webkit-backdrop-filter: blur(9px);
+    backdrop-filter: blur(9px);
+    opacity: 0;
+    visibility: hidden;
+    overscroll-behavior: contain;
+    transition: opacity 0.7s ease, visibility 0s linear 0.7s;
+  }
+  #menu.open { opacity: 1; visibility: visible; transition: opacity 0.7s ease; }
+  .menu-list {
+    list-style: none;
+    text-align: center;
+    transform: translateY(14px);
+    transition: transform 1s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  #menu.open .menu-list { transform: none; }
+  .menu-list::before, .menu-list::after {
+    content: "";
+    display: block;
+    width: 1px;
+    height: clamp(30px, 6vh, 54px);
+    margin: 0 auto;
+    background: linear-gradient(to bottom, rgba(214, 191, 136, 0), rgba(214, 191, 136, 0.8));
+  }
+  .menu-list::after { background: linear-gradient(to bottom, rgba(214, 191, 136, 0.8), rgba(214, 191, 136, 0)); }
+  .menu-list li {
+    margin: clamp(2px, 0.8vh, 8px) 0;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  #menu.open .menu-list li { opacity: 1; transform: none; }
+  #menu.open .menu-list li:nth-child(1) { transition-delay: 0.15s; }
+  #menu.open .menu-list li:nth-child(2) { transition-delay: 0.22s; }
+  #menu.open .menu-list li:nth-child(3) { transition-delay: 0.29s; }
+  #menu.open .menu-list li:nth-child(4) { transition-delay: 0.36s; }
+  #menu.open .menu-list li:nth-child(5) { transition-delay: 0.43s; }
+  .menu-list a {
+    position: relative;
+    display: inline-block;
+    padding: 14px 0 14px 0.42em;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(0.92rem, 1.9vw, 1.45rem);
+    letter-spacing: 0.42em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgba(239, 228, 205, 0.84);
+    transition: color 0.6s ease;
+    outline: none;
+  }
+  .menu-list a::after {                              /* thin gold line under the hovered item */
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 6px;
+    width: 0;
+    height: 1px;
+    background: rgba(214, 191, 136, 0.8);
+    transform: translateX(-50%);
+    transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .menu-list a::before {                             /* tiny four-point star */
+    content: "";
+    position: absolute;
+    left: -22px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -4px;
+    background: #d6bf88;
+    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .menu-list a:hover, .menu-list a:focus-visible { color: #fff4d8; }
+  .menu-list a:hover::after, .menu-list a:focus-visible::after { width: 34px; }
+  .menu-list a:hover::before, .menu-list a:focus-visible::before { opacity: 0.9; }
+  @media (max-width: 700px) {
+    .menu-list a { font-size: clamp(0.85rem, 4vw, 1.1rem); letter-spacing: 0.3em; padding-left: 0.3em; }
+    .menu-list a::before { left: -16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #menu, #menu.open, .menu-list, .menu-list li, .menu-list a, .menu-list a::after, .menu-list a::before, .nav-burger span, .nav-home { transition: none; }
+  }
+
+  /* Debug (D): show the invisible hit areas; completely invisible otherwise */
+  body.debug .hit { outline: 1px dashed rgba(255, 90, 90, 0.95); background: rgba(255, 90, 90, 0.10); }
+  body.debug .hit::after {
+    content: attr(data-name);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font: 11px/1 ui-monospace, Menlo, monospace;
+    letter-spacing: 0;
+    color: #ff9a9a;
+    text-transform: none;
+    white-space: nowrap;
+  }
+
+  @media (max-aspect-ratio: 1/1) {
+    .lbl { font-size: 0.63rem; letter-spacing: 0.22em; padding-left: 0.22em; }
+    .head-text { letter-spacing: 0.42em; padding-left: 0.42em; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hit .halo, .hit .sel, .lbl, .lbl::after, .back-home { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="scroller" aria-hidden="true"></div>
+
+<div id="stage">
+  <div id="cam">
+    <img id="plate" src="Fotos/observatory/obs-full-plate.png" alt="A candlelit neoclassical observatory with a large brass telescope at its centre" decoding="async" draggable="false">
+    <!-- Candle glows: positions are % of the image so they stay attached to it -->
+    <div class="candles" id="candles">
+    <div class="candle" style="left:22.8%; top:68.6%; --d:4.2s; --delay:-0.4s"></div>
+    <div class="candle" style="left:24.1%; top:68.2%; --d:5.1s; --delay:-2.1s"></div>
+    <div class="candle" style="left:11.1%; top:65.6%; --d:4.8s; --delay:-1.3s"></div>
+    <div class="candle" style="left:17.2%; top:53.4%; --d:5.6s; --delay:-3.0s"></div>
+    <div class="candle" style="left:34.4%; top:69.6%; --d:4.4s; --delay:-1.8s"></div>
+    <div class="candle" style="left:41.1%; top:64.4%; --d:5.3s; --delay:-0.9s"></div>
+    <div class="candle" style="left:58.0%; top:64.8%; --d:4.6s; --delay:-2.6s"></div>
+    <div class="candle" style="left:69.3%; top:64.3%; --d:5.0s; --delay:-1.1s"></div>
+    <div class="candle" style="left:77.7%; top:52.4%; --d:5.8s; --delay:-3.4s"></div>
+    <div class="candle" style="left:95.9%; top:52.0%; --d:4.3s; --delay:-0.2s"></div>
+    <div class="candle" style="left:97.1%; top:53.6%; --d:5.2s; --delay:-2.4s"></div>
+    </div>
+  </div>
+
+  <div id="eye">
+    <img id="eyeImg" src="Fotos/observatory/obs-eyepiece-front.png" alt="" decoding="async" draggable="false">
+    <div id="eyeWin" aria-hidden="true">
+      <div class="win-base"></div>
+      <img class="win-back" src="Fotos/observatory/planet-hub.png" alt="" aria-hidden="true">
+      <img id="hubImg" src="Fotos/observatory/planet-hub.png" alt="A spiral galaxy with five planets in orbit around it" draggable="false">
+    </div>
+  </div>
+
+
+  <div id="eyeVeil"></div>
+
+  <div id="hub" aria-hidden="true">
+    <div id="hubStage">
+      <div class="dest" data-key="about" style="--cx:25.000%;--cy:18.555%;--w:13.542%;--h:20.312%;--lx:25.000%;--ly:30.469%">
+        <a class="hit" href="about.html" tabindex="-1" aria-label="About me" data-name="About me"><span class="halo"></span><span class="sel"></span></a>
+        <a class="lbl" href="about.html" tabindex="-1" aria-hidden="true">About me</a>
+      </div>
+      <div class="dest" data-key="exp" style="--cx:75.391%;--cy:20.020%;--w:22.396%;--h:17.188%;--lx:75.391%;--ly:30.762%">
+        <a class="hit" href="experience.html" tabindex="-1" aria-label="Experience" data-name="Experience"><span class="halo"></span><span class="sel"></span></a>
+        <a class="lbl" href="experience.html" tabindex="-1" aria-hidden="true">Experience</a>
+      </div>
+      <div class="dest" data-key="proj" style="--cx:19.466%;--cy:53.223%;--w:12.109%;--h:18.164%;--lx:19.466%;--ly:64.062%">
+        <a class="hit" href="projects.html" tabindex="-1" aria-label="Projects &amp; Research" data-name="Projects &amp; Research"><span class="halo"></span><span class="sel"></span></a>
+        <a class="lbl" href="projects.html" tabindex="-1" aria-hidden="true">Projects &amp; Research</a>
+      </div>
+      <div class="dest" data-key="cool" data-side="left" style="--cx:48.763%;--cy:68.750%;--w:11.719%;--h:17.578%;--lx:42.318%;--ly:72.754%">
+        <a class="hit" href="cool-recs.html" tabindex="-1" aria-label="Cool Recs" data-name="Cool Recs"><span class="halo"></span><span class="sel"></span></a>
+        <a class="lbl" href="cool-recs.html" tabindex="-1" aria-hidden="true">Cool Recs</a>
+      </div>
+      <div class="dest" data-key="touch" style="--cx:80.794%;--cy:58.984%;--w:12.630%;--h:18.945%;--lx:80.794%;--ly:70.215%">
+        <a class="hit" href="in-touch.html" tabindex="-1" aria-label="In Touch" data-name="In Touch"><span class="halo"></span><span class="sel"></span></a>
+        <a class="lbl" href="in-touch.html" tabindex="-1" aria-hidden="true">In Touch</a>
+      </div>
+    </div>
+    <div class="hub-head" id="hubHead">
+      <div class="row"><svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0 L7.1 4.9 L12 6 L7.1 7.1 L6 12 L4.9 7.1 L0 6 L4.9 4.9 Z"/></svg><span class="head-text">Explore</span><svg class="star" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0 L7.1 4.9 L12 6 L7.1 7.1 L6 12 L4.9 7.1 L0 6 L4.9 4.9 Z"/></svg></div>
+      <i class="vrule"></i>
+    </div>
+    <div class="hub-foot" id="hubFoot">
+      <span>Same curiosity</span>
+      <i class="vrule"></i>
+      <span>A larger universe</span>
+      <a class="back-home" id="backHome" href="observatory-test.html" tabindex="-1">&larr; Back home</a>
+    </div>
+  </div>
+
+  <canvas id="dust"></canvas>
+  <div id="vignette"></div>
+  <div id="darken"></div>
+  <div id="scrim"></div>
+
+  <div class="title-block" id="titleBlock">
+    <h1 id="title">Irene<br>Vinuesa</h1>
+    <div class="rule" id="rule"></div>
+    <p class="disciplines" id="disciplines">Finance · Markets · Mathematics · Technology</p>
+  </div>
+
+  <button class="invite" id="invite" type="button">
+    <span>Look through the telescope</span>
+    <i></i>
+  </button>
+
+</div>
+
+<header id="topnav">
+  <a class="nav-home" id="navHome" href="observatory-test.html">Home</a>
+  <button class="nav-burger" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+</header>
+
+<div id="menu" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Sections">
+  <ul class="menu-list">
+    <li><a href="about.html" tabindex="-1">About me</a></li>
+    <li><a href="experience.html" tabindex="-1">Experience</a></li>
+    <li><a href="projects.html" tabindex="-1">Projects &amp; Research</a></li>
+    <li><a href="cool-recs.html" tabindex="-1">Cool Recs</a></li>
+    <li><a href="in-touch.html" tabindex="-1">In Touch</a></li>
+  </ul>
+</div>
+
+<div id="hud"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Tunables ---------- */
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var CFG = {
+    aspect: 2880 / 1620,               // image aspect ratio (16:9)
+    eyepiece: { x: 0.40, y: 0.46 },    // eyepiece position, as a fraction of the image
+    endAnchor: { x: 0.50, y: 0.50 },   // where the eyepiece ends up on screen (fraction of viewport)
+    endScale: reduced ? 1.6 : 26,      // observatory scale when the camera stops (far beyond the image's sharpness on purpose)
+    scaleCurve: 1.25,                  // >1 = slower start, faster approach
+    smooth: 6,                         // scroll smoothing (higher = snappier)
+
+    /* Scroll phases (fractions of total scroll) */
+    glideEnd: 0.70,                    // the eyepiece has glided to the exact screen centre
+    alignStart: 0.74,                  // camera begins shifting right + forward along the tube axis
+    camEnd: 0.92,                      // the camera comes to a stop (max scale)
+    xfadeStart: 0.88,                  // frontal eyepiece starts to appear
+    xfadeEnd: 0.96,                    // observatory long gone, eyepiece nearly settled
+    alignShift: 0.006,                 // how far the aim point slides along the tube (fraction of image width)
+    tube: { x: 0.91, y: -0.42 },       // tube axis direction in the image (away from the eyepiece: right and up)
+    /* Frontal eyepiece image */
+    lens: { x: 0.501, y: 0.464 },       // centre of the glass, as a fraction of obs-eyepiece-front.png
+    ringFrac: 0.402,                   // outer brass ring diameter / image width
+    ringViewport: 0.80,                // final ring diameter as a share of the viewport (height or width, whichever is smaller)
+    eyeOversize: 1.22,                 // the frontal image starts this much larger, then settles
+    eyeBlur: 9,                        // starting softness of the frontal image, in screen px
+    roll: 0,                           // optional camera roll (degrees) during alignment; 0 = off
+
+    /* Space entry (after the approved sequence) */
+    approvedVH: 600,                   // scroll distance of the approved sequence, in viewport heights (do not change)
+    glassR: 0.140,                     // radius of the space opening, as a fraction of the image width (measured, slightly conservative)
+    galaxyNucleus: { x: 0.0188, y: -0.006 }, // the telescope galaxy's bright core relative to the lens centre (fraction of image width)
+    spaceForward: 0.30                 // modest extra forward movement inside the tube (+30%); the galaxy is never enlarged beyond this
+  };
+
+  var stage = document.getElementById("stage");
+  var cam = document.getElementById("cam");
+  var plate = document.getElementById("plate");
+  var darken = document.getElementById("darken");
+  var vignette = document.getElementById("vignette");
+  var scrim = document.getElementById("scrim");
+  var hub = document.getElementById("hub");
+  var hubStage = document.getElementById("hubStage");
+  var hubHead = document.getElementById("hubHead");
+  var hubFoot = document.getElementById("hubFoot");
+  var backHome = document.getElementById("backHome");
+  var eyeVeil = document.getElementById("eyeVeil");
+  var eyeWin = document.getElementById("eyeWin");
+  var hubImg = document.getElementById("hubImg");
+  var navHome = document.getElementById("navHome");
+  var burger = document.getElementById("burger");
+  var menu = document.getElementById("menu");
+  var menuLinks = Array.prototype.slice.call(document.querySelectorAll("#menu a"));
+  var dests = Array.prototype.slice.call(document.querySelectorAll("#hub .dest"));
+  var eye = document.getElementById("eye");
+  var eyeImg = document.getElementById("eyeImg");
+  var candlesEl = document.getElementById("candles");
+  var ruleEl = document.getElementById("rule");
+  var titleBlock = document.getElementById("titleBlock");
+  var disciplines = document.getElementById("disciplines");
+  var title = document.getElementById("title");
+  var invite = document.getElementById("invite");
+  var hud = document.getElementById("hud");
+  var canvas = document.getElementById("dust");
+  var ctx = canvas.getContext("2d");
+
+  var vw = 0, vh = 0, w = 0, h = 0, ox = 0, oy = 0, ex = 0, ey = 0;
+  var lx = 0, ly = 0, eyeFinal = 1, eyeCover = 1;
+  var dpr = 1;
+
+  // Debug helpers: ?p=0.86 freezes the approved sequence at that progress;
+  // ?e=0.5 freezes the space-entry phase (the approved sequence is then complete).
+  var forcedP = null, forcedE = null;
+  (function () {
+    var m = /[?&]p=([0-9.]+)/.exec(window.location.search);
+    var n = /[?&]e=([0-9.]+)/.exec(window.location.search);
+    if (m) forcedP = clamp(parseFloat(m[1]), 0, 1);
+    if (n) { forcedE = clamp(parseFloat(n[1]), 0, 1); forcedP = 1; }
+    if ((m || n) && !/[?&]nodebug/.test(window.location.search)) document.body.classList.add("debug");
+  })();
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+  function smoothstep(a, b, v) {
+    var t = clamp((v - a) / (b - a), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+
+  /* ---------- Layout: image covers the viewport ("cover") ---------- */
+  function layout() {
+    vw = window.innerWidth;
+    vh = window.innerHeight;
+    w = Math.max(vw, vh * CFG.aspect);
+    h = w / CFG.aspect;
+    ox = (vw - w) / 2;
+    oy = (vh - h) / 2;
+    ex = CFG.eyepiece.x * w;
+    ey = CFG.eyepiece.y * h;
+    cam.style.width = w + "px";
+    cam.style.height = h + "px";
+    eye.style.width = w + "px";
+    eye.style.height = h + "px";
+
+    // Frontal eyepiece: lens centre inside the container, and its final scale.
+    lx = CFG.lens.x * w;
+    ly = CFG.lens.y * h;
+    var coverMin = Math.max((vh / h) / (2 * Math.min(CFG.lens.y, 1 - CFG.lens.y)), vw / w) * 1.02;
+    var ringTarget = CFG.ringViewport * Math.min(vh, vw * 1.07);
+    eyeFinal = Math.max(coverMin, ringTarget / (CFG.ringFrac * w));
+    eyeCover = coverMin;
+
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(vw * dpr);
+    canvas.height = Math.round(vh * dpr);
+    layoutHub();
+  }
+
+  /* ---------- Dust ---------- */
+  var motes = [];
+  var MOTE_COUNT = reduced ? 0 : 46;
+  for (var i = 0; i < MOTE_COUNT; i++) {
+    motes.push({
+      x: Math.random(),
+      y: Math.random(),
+      r: 0.5 + Math.random() * 1.1,
+      a: 0.06 + Math.random() * 0.16,
+      vx: 0.004 + Math.random() * 0.006,
+      vy: -0.003 - Math.random() * 0.006,
+      ph: Math.random() * Math.PI * 2,
+      sp: 0.3 + Math.random() * 0.6
+    });
+  }
+
+  var dustOn = true;
+  function drawDust(t, p, dt) {
+    if (!MOTE_COUNT) return;
+    var fade = 1 - smoothstep(0.45, 0.75, p); // gone well before the frontal eyepiece dominates
+    if (fade <= 0.005) {
+      if (dustOn) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); dustOn = false; }
+      return;
+    }
+    dustOn = true;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, vw, vh);
+    var flow = 1 + p * 0.9; // motes stream outward as the camera advances
+    for (var i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      m.x += m.vx * dt;
+      m.y += m.vy * dt;
+      if (m.x > 1.05) m.x = -0.05;
+      if (m.y < -0.05) m.y = 1.05;
+      var px = 0.5 + (m.x - 0.5) * flow;
+      var py = 0.5 + (m.y - 0.5) * flow;
+      var tw = 0.65 + 0.35 * Math.sin(t * 0.001 * m.sp + m.ph);
+      ctx.globalAlpha = m.a * tw * fade;
+      ctx.fillStyle = "#ffd9a0";
+      ctx.beginPath();
+      ctx.arc(px * vw, py * vh, m.r * (1 + p * 0.5), 0, 6.2832);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- Celestial hub (planet-hub image) ---------- */
+  // All coordinates are in the pixels of planet-hub.png (1536 x 1024). Hit areas and labels are
+  // positioned in the HTML/CSS as percentages of the displayed image, so only the image box is computed here.
+  var HUB = {
+    W: 1536, H: 1024,
+    core: { x: 782, y: 421 },                        // bright centre of the big galaxy
+    safe: { x0: 190, y0: 80, x1: 1350, y1: 805 }     // planets + labels that must stay visible
+  };
+  var START = { about: 0.88, exp: 0.89, proj: 0.90, cool: 0.91, touch: 0.92 };   // labels only after the universe has settled
+  var hubSF = 1, hubOX = 0, hubOY = 0, hubBars = false;                // final scale and offset of the image on screen
+  var hubOn = false, hubReady = false, hubT = 0, hubReveal = 0, hubLabels = 0, hubScale = 0, hubPhase = "-";
+
+  var destInfo;
+  destInfo = dests.map(function (el) {
+    var key = el.getAttribute("data-key");
+    return { el: el, key: key, btn: el.querySelector(".hit"), lbl: el.querySelector(".lbl"),
+             start: START[key], name: el.querySelector(".hit").getAttribute("data-name") };
+  });
+
+  /* Fit: cover the viewport when the planets and labels still fit; otherwise shrink until they do
+     (the bars are then filled by a blurred copy of the same image). The vertical position centres the
+     planets, not the picture. */
+  function layoutHub() {
+    var sf = HUB.safe, safeW = sf.x1 - sf.x0, safeH = sf.y1 - sf.y0;
+    var sCover = Math.max(vw / HUB.W, vh / HUB.H);
+    var sFit = Math.min(vw * 0.94 / safeW, vh * 0.94 / safeH);
+    hubSF = Math.min(sCover, sFit);
+    var bars = hubSF < sCover - 0.0005;
+    var iw = HUB.W * hubSF, ih = HUB.H * hubSF;
+    hubOX = (vw - iw) / 2;
+    var cy = (sf.y0 + sf.y1) / 2;
+    hubOY = vh / 2 - cy * hubSF - vh * 0.05;
+    if (!bars) hubOY = Math.min(0, Math.max(vh - ih, hubOY));
+    hubStage.style.left = hubOX.toFixed(2) + "px";
+    hubStage.style.top = hubOY.toFixed(2) + "px";
+    hubStage.style.width = iw.toFixed(2) + "px";
+    hubStage.style.height = ih.toFixed(2) + "px";
+    hubStage.style.transformOrigin = (HUB.core.x * hubSF).toFixed(2) + "px " + (HUB.core.y * hubSF).toFixed(2) + "px";
+    hubBars = bars;
+    eyeWin.classList.toggle("bars", bars);
+    // When the image is letterboxed (narrow screens), the header and footer sit on the image itself.
+    // keep every label fully on screen (matters on narrow screens)
+    for (var li = 0; li < destInfo.length; li++) {
+      var lb = destInfo[li].lbl, side = destInfo[li].el.getAttribute("data-side") === "left";
+      var lw = lb.offsetWidth, l0 = hubOX + lb.offsetLeft - (side ? lw : lw / 2);
+      var sh = l0 < 8 ? 8 - l0 : (l0 + lw > vw - 8 ? vw - 8 - (l0 + lw) : 0);
+      lb.style.setProperty("--shift", sh.toFixed(1) + "px");
+    }
+    hubHead.style.top = bars ? Math.max(12, hubOY + ih * 0.035).toFixed(1) + "px" : "";
+    hubFoot.style.bottom = bars ? Math.max(12, vh - (hubOY + ih * 0.975)).toFixed(1) + "px" : "";
+    layoutEye();
+  }
+
+  /* The telescope window. planet-hub.png sits inside the glass opening (container coordinates of the eyepiece
+     image). The camera then scales the whole telescope up until the opening covers the screen; at that point the
+     image is exactly at its final hub position and size, so it is one continuous picture throughout. */
+  var EYE_GROW = 0.6;                        // the opening widens by up to 60% on top of the camera move
+  var eyeR0 = 0, eyeSEnd = 3, eyeSH = 0.2, eyeCoreX = 0, eyeCoreY = 0, lastWin = "";
+  function layoutEye() {
+    eyeR0 = 0.97 * CFG.glassR * w;                                                 // glass opening, just inside its rim
+    eyeCoreX = hubOX + HUB.core.x * hubSF;
+    eyeCoreY = hubOY + HUB.core.y * hubSF;
+    var far = Math.max(Math.hypot(eyeCoreX, eyeCoreY), Math.hypot(vw - eyeCoreX, eyeCoreY),
+                       Math.hypot(eyeCoreX, vh - eyeCoreY), Math.hypot(vw - eyeCoreX, vh - eyeCoreY));
+    eyeSEnd = Math.max(eyeFinal * 1.3, 1.06 * far / (eyeR0 * (1 + EYE_GROW)));       // camera scale at which the opening covers the screen
+    eyeSH = hubSF / eyeSEnd;                                                       // planet-hub scale inside the telescope
+    hubImg.style.left = (lx - HUB.core.x * eyeSH).toFixed(2) + "px";
+    hubImg.style.top = (ly - HUB.core.y * eyeSH).toFixed(2) + "px";
+    hubImg.style.width = (HUB.W * eyeSH).toFixed(2) + "px";
+    hubImg.style.height = (HUB.H * eyeSH).toFixed(2) + "px";
+    lastWin = "";
+    updateWindow(0);
+  }
+  function updateWindow(ct) {
+    var R = eyeR0 * (1 + EYE_GROW * ct), f = 2 + R * 0.05;
+    var key = R.toFixed(1) + "|" + ct.toFixed(3);
+    if (key === lastWin) return;
+    lastWin = key;
+    var mask = "radial-gradient(circle at " + lx.toFixed(1) + "px " + ly.toFixed(1) + "px, #000 " + Math.max(0, R - f).toFixed(1) + "px, transparent " + R.toFixed(1) + "px)";
+    eyeWin.style.webkitMaskImage = mask;
+    eyeWin.style.maskImage = mask;
+    /* Soft edges while the image is still smaller than the opening (so it never reads as a picture in a frame);
+       the feather shrinks to nothing as the image reaches its final size. */
+    var F = (14 * Math.pow(1 - ct, 0.6)).toFixed(2);
+    var fe = ct >= 1 ? "none" : "linear-gradient(to right, transparent, #000 " + F + "%, #000 " + (100 - F) + "%, transparent), linear-gradient(to bottom, transparent, #000 " + F + "%, #000 " + (100 - F) + "%, transparent)";
+    hubImg.style.webkitMaskImage = fe;
+    hubImg.style.maskImage = fe;
+    hubImg.style.webkitMaskComposite = "source-in";
+    hubImg.style.maskComposite = "intersect";
+  }
+
+  /* e = 0..1 progress after we are inside the telescope, looking at planet-hub.png through the opening.
+       0.00-0.08  hold
+       0.08-0.78  the camera moves forward: the opening grows, the brass leaves the screen, the image never changes
+       0.15-0.80  a faint veil softens the brass while it leaves
+       0.78-0.88  the camera settles on the finished universe
+       0.88-1.00  only now: labels, then EXPLORE and the footer; then interactive */
+  function hubUpdate(e, ct, ax, ay, s3) {
+    var veilOp = 0.6 * smoothstep(0.15, 0.50, e) * (1 - smoothstep(0.55, 0.80, e));
+    eyeVeil.style.visibility = veilOp > 0.002 ? "visible" : "hidden";
+    eyeVeil.style.opacity = veilOp.toFixed(3);
+    eyeVeil.style.setProperty("--gr", (CFG.glassR * w * s3).toFixed(1) + "px");
+    eyeVeil.style.setProperty("--vx", ax.toFixed(1) + "px");
+    eyeVeil.style.setProperty("--vy", ay.toFixed(1) + "px");
+
+    hubT = ct;
+    hubScale = eyeSH * s3;
+    var uiOn = e > 0.84;
+    hub.style.visibility = uiOn ? "visible" : "hidden";
+    hub.style.opacity = uiOn ? "1" : "0";
+    for (var i = 0; i < destInfo.length; i++) {
+      var di = destInfo[i];
+      di.lbl.style.opacity = smoothstep(di.start, di.start + 0.06, e).toFixed(3);
+    }
+    hubHead.style.opacity = smoothstep(0.92, 0.98, e).toFixed(3);
+    hubFoot.style.opacity = smoothstep(0.94, 1.0, e).toFixed(3);
+    hubReveal = smoothstep(0.70, 0.88, e);
+    hubLabels = smoothstep(0.88, 0.98, e);
+    setHubReady(e > 0.96);
+    hubPhase = e <= 0 ? "-" : e < 0.08 ? "holding the view" : e < 0.78 ? "moving forward through the telescope" : e < 0.88 ? "camera settling" : e < 0.96 ? "labels appearing" : "hub interactive";
+  }
+
+  function setHubReady(on) {
+    if (on === hubReady) return;
+    hubReady = on;
+    hub.classList.toggle("ready", on);
+    hub.setAttribute("aria-hidden", on ? "false" : "true");
+    for (var i = 0; i < destInfo.length; i++) destInfo[i].btn.tabIndex = on ? 0 : -1;
+    backHome.tabIndex = on ? 0 : -1;
+    if (!on) clearActive();
+  }
+
+  /* Hover / focus: subtle glow on the planet and a brighter label. Clicking either one follows its link. */
+  function clearActive() {
+    for (var i = 0; i < destInfo.length; i++) destInfo[i].el.classList.remove("active");
+  }
+  destInfo.forEach(function (di) {
+    function on() { clearActive(); di.el.classList.add("active"); }
+    function off() { di.el.classList.remove("active"); }
+    [di.btn, di.lbl].forEach(function (n) {
+      n.addEventListener("mouseenter", on);
+      n.addEventListener("mouseleave", off);
+    });
+    di.btn.addEventListener("focus", on);
+    di.btn.addEventListener("blur", off);
+  });
+
+  /* ---------- Camera ---------- */
+  function render(p, e) {
+    e = e || 0;
+    var A = CFG.alignStart, X0 = CFG.xfadeStart, X1 = CFG.xfadeEnd, C = CFG.camEnd;
+
+    /* Camera scale: very slow start, accelerating approach, then an ease to a stop at camEnd.
+       The scale goes far past what the image can resolve; the softness is deliberate. */
+    var t = clamp(p / C, 0, 1);
+    var u = Math.pow(t, CFG.scaleCurve);
+    var f = u * u * (3 - 2 * u);
+    var s = Math.pow(CFG.endScale, f);
+
+    /* Aim point (in image pixels): the eyepiece, sliding along the tube axis
+       (right and forward) once we are extremely close. */
+    var ap = smoothstep(A, C, p);
+    var aimx = ex + CFG.alignShift * w * CFG.tube.x * ap;
+    var aimy = ey + CFG.alignShift * w * CFG.tube.y * ap;
+
+    /* The aim point travels from the eyepiece's natural position to the exact screen centre. */
+    var gp = Math.pow(clamp(p / CFG.glideEnd, 0, 1), 1.2);
+    var g = gp * gp * (3 - 2 * gp);
+    var e0x = ox + ex, e0y = oy + ey;
+    var tx = CFG.endAnchor.x * vw, ty = CFG.endAnchor.y * vh;
+    var ax = e0x + g * (tx - e0x);
+    var ay = e0y + g * (ty - e0y);
+
+    var px = ax - s * aimx;
+    var py = ay - s * aimy;
+
+    // Never reveal the black behind the image.
+    px = Math.min(0, Math.max(vw - s * w, px));
+    py = Math.min(0, Math.max(vh - s * h, py));
+
+    // Screen position of the aim point (focus for the darkening) and of the eyepiece tip itself.
+    var sx = px + s * aimx, sy = py + s * aimy;
+    var tipx = px + s * ex, tipy = py + s * ey;
+
+    // Optional, very subtle roll around the aim point during alignment (off by default).
+    var roll = CFG.roll * smoothstep(A, X0, p);
+    cam.style.transform = roll
+      ? "translate3d(" + sx.toFixed(2) + "px," + sy.toFixed(2) + "px,0) rotate(" + roll.toFixed(3) + "deg) scale(" + s.toFixed(4) + ") translate(" + (-aimx).toFixed(1) + "px," + (-aimy).toFixed(1) + "px)"
+      : "translate3d(" + px.toFixed(2) + "px," + py.toFixed(2) + "px,0) scale(" + s.toFixed(4) + ")";
+    stage.style.setProperty("--ax", sx.toFixed(1) + "px");
+    stage.style.setProperty("--ay", sy.toFixed(1) + "px");
+
+    /* Frontal eyepiece: crossfades in over the (still moving) observatory.
+       The observatory stays fully opaque underneath until the eyepiece is fully opaque,
+       so the two never blend into a brightness dip. */
+    var xf = smoothstep(X0, X1, p);
+    var settleT = clamp((p - X0) / (1 - X0), 0, 1);
+    var settle = 1 - (1 - settleT) * (1 - settleT);              // ease-out
+    var s2 = eyeFinal * (1 + (CFG.eyeOversize - 1) * (1 - settle));
+    var eox = vw / 2 - lx * s2, eoy = vh / 2 - ly * s2;          // glass centre lands exactly on the viewport centre
+    var s3 = s2, ct = 0, ax = vw / 2, ay = vh / 2;
+    if (e > 0) {
+      /* Camera moves forward through the telescope: the scale grows until the opening covers the screen,
+         and the opening's centre glides to where the hub's galaxy sits in the final composition. */
+      ct = smoothstep(0.08, 0.78, e);
+      s3 = eyeFinal * Math.pow(eyeSEnd / eyeFinal, ct);
+      ax = vw / 2 + ct * (eyeCoreX - vw / 2);
+      ay = vh / 2 + ct * (eyeCoreY - vh / 2);
+      eox = ax - lx * s3;
+      eoy = ay - ly * s3;
+    }
+    updateWindow(ct);
+    eye.style.transform = "translate3d(" + eox.toFixed(2) + "px," + eoy.toFixed(2) + "px,0) scale(" + s3.toFixed(4) + ")";
+    eye.style.opacity = xf.toFixed(3);
+    eye.style.visibility = xf > 0.001 ? "visible" : "hidden";
+    // The observatory dims out a little ahead of the eyepiece appearing, so the two never
+    // read as a double exposure; it is completely gone before the crossfade ends.
+    var camOp = 1 - smoothstep(X0 + 0.015, X0 + 0.055, p);
+    cam.style.opacity = camOp.toFixed(3);
+    cam.style.visibility = camOp <= 0.001 ? "hidden" : "visible";
+
+    var eyeSharp = smoothstep(X0 + 0.02, 0.995, p);
+    var eyeBlur = reduced ? 0 : CFG.eyeBlur * (1 - eyeSharp);
+    var eyeBright = 0.75 + 0.25 * eyeSharp;
+    eye.style.filter = (eyeBlur > 0.03 || eyeBright < 0.995)
+      ? "blur(" + (eyeBlur / s2).toFixed(3) + "px) brightness(" + eyeBright.toFixed(3) + ")"
+      : "none";
+
+    /* Darkness: builds through the approach, peaks in the middle of the crossfade
+       (hiding the diagonal-to-frontal change), then releases as the eyepiece settles.
+       The radial focus keeps the centre lit, so it never becomes a black screen. */
+    var base = smoothstep(0.40, 0.84, p) * 0.60 + smoothstep(0.82, 0.90, p) * 0.16;
+    var release = 1 - smoothstep(0.925, 0.995, p);
+    var dark = base * release;
+    darken.style.opacity = dark.toFixed(3);
+    var spaceClear = 1 - smoothstep(0.08, 0.60, e);               // telescope vignette and left scrim melt away as the hub opens
+    vignette.style.opacity = ((0.6 + 0.4 * smoothstep(0.2, 0.85, p)) * spaceClear).toFixed(3);
+    scrim.style.opacity = spaceClear.toFixed(3);
+    hubUpdate(e, ct, ax, ay, s3);
+
+    // Softness on the observatory as we get close (subtle, in screen px).
+    var blurScreen = 12 * smoothstep(0.55, 0.91, p) * (reduced ? 0 : 1);
+    plate.style.filter = blurScreen > 0.03 ? "blur(" + (blurScreen / s).toFixed(3) + "px)" : "none";
+
+    // Candle glow fades well before the close-up.
+    candlesEl.style.opacity = (1 - smoothstep(0.40, 0.72, p)).toFixed(3);
+
+    // Text: title and disciplines leave first, invitation lingers.
+    var tOp = 1 - smoothstep(0.02, 0.16, p);
+    var dOp = 1 - smoothstep(0.0, 0.12, p);
+    var iOp = 1 - smoothstep(0.12, 0.30, p);
+    title.style.opacity = tOp.toFixed(3);
+    disciplines.style.opacity = dOp.toFixed(3);
+    ruleEl.style.opacity = dOp.toFixed(3);
+    titleBlock.style.transform = "translate3d(" + (-p * 60).toFixed(1) + "px," + (-p * 30).toFixed(1) + "px,0)";
+    invite.style.opacity = iOp.toFixed(3);
+    invite.style.transform = "translateX(-50%) translateY(" + (p * 24).toFixed(1) + "px)";
+    invite.style.pointerEvents = iOp < 0.05 ? "none" : "auto";
+
+    if (document.body.classList.contains("debug")) {
+      var phase = p < A ? "approach" : p < X0 ? "close-up + alignment" : p < X1 ? "crossfade" : "inside telescope";
+      hud.textContent =
+        "progress      " + p.toFixed(3) + "  (" + phase + ")\n" +
+        "obs scale     " + s.toFixed(2) + "\n" +
+        "aim @         " + sx.toFixed(0) + "," + sy.toFixed(0) + "px\n" +
+        "tip @         " + tipx.toFixed(0) + "," + tipy.toFixed(0) + "px\n" +
+        "crossfade     " + xf.toFixed(3) + "\n" +
+        "eye opacity   " + xf.toFixed(3) + "\n" +
+        "eye scale     " + s3.toFixed(3) + "  (tube view " + eyeFinal.toFixed(3) + ")\n" +
+        "space phase   " + e.toFixed(3) + "  (" + hubPhase + ")\n" +
+        "camera fwd    " + hubT.toFixed(3) + "\n" +
+        "settled       " + hubReveal.toFixed(3) + "\n" +
+        "labels        " + hubLabels.toFixed(3) + "\n" +
+        "hub image     " + hubScale.toFixed(3) + "x  (final " + hubSF.toFixed(3) + ")\n" +
+        "darkness      " + dark.toFixed(3);
+    }
+  }
+
+  /* ---------- Scroll loop ---------- */
+  function maxScroll() {
+    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  }
+  // Share of total scroll used by the approved sequence (its scroll distance is unchanged).
+  function splitPoint() {
+    return clamp((CFG.approvedVH / 100) * window.innerHeight / maxScroll(), 0.05, 1);
+  }
+  var current = 0, last = performance.now();
+
+  function frame(now) {
+    var dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    var split = splitPoint();
+    var target = forcedP !== null
+      ? (forcedE !== null ? split + forcedE * (1 - split) : forcedP * split)
+      : clamp(window.scrollY / maxScroll(), 0, 1);
+    if (reduced || forcedP !== null) {
+      current = target;
+    } else {
+      current += (target - current) * (1 - Math.exp(-dt * CFG.smooth));
+      if (Math.abs(target - current) < 0.00005) current = target;
+    }
+    var pA = clamp(current / split, 0, 1);                       // approved sequence progress (identical to before)
+    var eS = clamp((current - split) / (1 - split), 0, 1);       // space-entry progress
+    render(pA, eS);
+    drawDust(now, pA, dt);
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- Interactions ---------- */
+  invite.addEventListener("click", function () {
+    window.scrollTo({ top: maxScroll() * splitPoint() * 0.45, behavior: reduced ? "auto" : "smooth" });
+  });
+  window.addEventListener("keydown", function (e) {
+    if (e.key === "d" || e.key === "D") document.body.classList.toggle("debug");
+  });
+  window.addEventListener("resize", layout);
+
+  /* ---------- Start ---------- */
+  layout();
+  render(0);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layoutHub);   // label widths change once the font is loaded
+  function ready() { document.body.classList.add("ready"); }
+  if (plate.complete && plate.naturalWidth) ready();
+  else { plate.addEventListener("load", ready); plate.addEventListener("error", ready); }
+  // Debug: ?e=1&hover=proj shows a planet's hover state.
+  (function () {
+    var hv = /[?&]hover=(\w+)/.exec(window.location.search);
+    destInfo.forEach(function (di) {
+      if (hv && hv[1] === di.key) di.btn.dispatchEvent(new Event("mouseenter"));
+    });
+  })();
+  /* Navigation:
+       observatory-test.html            -> starts at the beginning of the observatory
+       observatory-test.html#universe   -> starts directly in the settled five-planet hub (nothing replays)
+       "Back home"                      -> jumps back to the very beginning of the observatory */
+  function enterUniverse() {
+    try { history.scrollRestoration = "manual"; } catch (err) {}
+    window.scrollTo(0, maxScroll());
+    current = 1;                                   // skip the smoothing so no earlier stage is shown
+  }
+  function goHome(ev) {
+    if (ev && (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey || ev.button > 0)) return;   // let new-tab clicks through
+    if (ev) ev.preventDefault();
+    try { history.replaceState(null, "", window.location.pathname + window.location.search); } catch (err) {}
+    window.scrollTo(0, 0);
+    current = 0;                                   // reset immediately instead of rewinding through every stage
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+  backHome.addEventListener("click", function (ev) { goHome(ev); });
+  navHome.addEventListener("click", function (ev) { setMenu(false); goHome(ev); });
+
+  /* Hamburger menu: opens over whatever scene is showing; closes with the X, ESC, or a click outside the list. */
+  function setMenu(open, returnFocus) {
+    menu.classList.toggle("open", open);
+    burger.classList.toggle("open", open);
+    burger.setAttribute("aria-expanded", open ? "true" : "false");
+    burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    menu.setAttribute("aria-hidden", open ? "false" : "true");
+    menuLinks.forEach(function (a) { a.tabIndex = open ? 0 : -1; });
+    if (open) setTimeout(function () { if (menuLinks[0]) menuLinks[0].focus(); }, 120);
+    else if (returnFocus) burger.focus();
+  }
+  burger.addEventListener("click", function () { setMenu(!menu.classList.contains("open")); });
+  menu.addEventListener("click", function (ev) { if (!ev.target.closest(".menu-list a")) setMenu(false); });
+  window.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && menu.classList.contains("open")) setMenu(false, true);
+  });
+  // the page underneath is scroll-driven; do not let it move while the menu is open
+  menu.addEventListener("wheel", function (ev) { ev.preventDefault(); }, { passive: false });
+  menu.addEventListener("touchmove", function (ev) { ev.preventDefault(); }, { passive: false });
+  window.addEventListener("hashchange", function () { if (window.location.hash === "#universe") enterUniverse(); });
+  if (window.location.hash === "#universe" && forcedP === null) enterUniverse();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
